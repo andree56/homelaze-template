@@ -23,7 +23,9 @@ import Login from "views/examples/Login.js";
 import Tables from "views/examples/Tables.js";
 import Icons from "views/examples/Icons.js";
 import BookingManagement from 'views/admin/BookingManagement.js';
-import ClientManagement from 'views/admin/ClientManagement.js';
+// import ClientManagement from 'views/admin/ClientManagement.js';
+import TherapistSchedules from "views/admin/TherapistSchedules";
+import Appointments from "views/admin/Appointments";
 
 
 
@@ -42,20 +44,20 @@ var routes = [
     component: <BookingManagement />,
     layout: "/admin",
   },
-  // {
-  //   path: "/therapist-schedules",
-  //   name: "Therapist Schedules",
-  //   icon: "ni ni-time-alarm text-blue",
-  //   component: <TherapistSchedules />,
-  //   layout: "/admin",
-  // },
   {
-    path: "/client-management",
-    name: "Client Management",
-    icon: "ni ni-archive-2 text-green",
-    component: <ClientManagement />,
+    path: "/therapist-schedules",
+    name: "Therapist Schedules",
+    icon: "ni ni-time-alarm text-blue",
+    component: <TherapistSchedules />,
     layout: "/admin",
   },
+  // {
+  //   path: "/client-management",
+  //   name: "Client Management",
+  //   icon: "ni ni-archive-2 text-green",
+  //   component: <ClientManagement />,
+  //   layout: "/admin",
+  // },
   {
     path: "/user-profile",
     name: "User Profile",
@@ -63,13 +65,21 @@ var routes = [
     component: <Profile />,
     layout: "/admin",
   },
+  // {
+  //   path: "/tables",
+  //   name: "Tables",
+  //   icon: "ni ni-bullet-list-67 text-red",
+  //   component: <Tables />,
+  //   layout: "/admin",
+  // },
   {
-    path: "/tables",
-    name: "Tables",
-    icon: "ni ni-bullet-list-67 text-red",
-    component: <Tables />,
+    path: "/appointments",
+    name: "Appointments",
+    icon: "ni ni-calendar-grid-58 text-red",
+    component: Appointments,
     layout: "/admin",
   },
+  
   {
     path: "/login",
     name: "Login",

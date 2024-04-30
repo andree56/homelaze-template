@@ -1,7 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const therapistRoutes = require('./routes/therapistRoutes');
+const clientRoutes = require('./routes/clientRoutes');
+const appointmentRoutes = require('./routes/appointmentRoutes');
 
 const app = express();
 app.use(cors());
@@ -13,6 +14,8 @@ mongoose.connect('mongodb://localhost/homelazeDB', {
 }).then(() => console.log('Connected to MongoDB'));
 
 app.use('/api/therapists', therapistRoutes);
+app.use('/api/clients', clientRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
