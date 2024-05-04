@@ -1,63 +1,82 @@
-// BookingManagement.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import FullCalendar from '@fullcalendar/react';
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
-import UserHeader from "components/Headers/UserHeader.js";
+import SimpleHeader from 'components/Headers/SimpleHeader';
+import { useNavigate } from 'react-router-dom';  // Import useNavigate instead of useHistory
 
 const BookingManagement = () => {
-  const [therapists, setTherapists] = useState([]);
+    const [events, setEvents] = useState([]);
+    const [resources, setResources] = useState([]);
+    const navigate = useNavigate();  // Instantiate useNavigate for navigation
 
-  useEffect(() => {
-    axios.get('http://localhost:5000/api/therapists')
-      .then(response => {
-        const formattedTherapists = response.data.map(therapist => ({
-          id: therapist._id,
-          title: therapist.name,
-          eventColor: therapist.color // Color from the backend
-        }));
-        setTherapists(formattedTherapists);
-      })
-      .catch(error => console.error('Failed to fetch therapists:', error));
-  }, []);
+    useEffect(() => {
+        const today = new Date().toISOString().split('T')[0]; // Use today's date or fetch date from another source
 
-  const eventContent = (eventInfo) => {
-    const { event } = eventInfo;
+        axios.get('http://localhost:5000/api/therapists')
+            .then(response => {
+                const formattedResources = response.data.map(therapist => ({
+                    id: therapist._id,
+                    title: therapist.name,
+                    eventColor: therapist.color  // Assuming each therapist has a 'color' field
+                }));
+                setResources(formattedResources);
+            })
+            .catch(error => console.error('Failed to fetch therapists:', error));
+
+        axios.get('http://localhost:5000/api/appointments')
+            .then(response => {
+                const formattedEvents = response.data.map(appointment => ({
+                    id: appointment._id,
+                    resourceId: appointment.therapistId._id,
+                    title: `${appointment.clientId.name} - ${appointment.serviceType}`,
+                    start: `${today}T${appointment.startTime}`, // Construct full datetime string
+                    end: `${today}T${appointment.endTime}`,
+                    backgroundColor: appointment.therapistId.color
+                }));
+                setEvents(formattedEvents);
+            })
+            .catch(error => console.error('Failed to fetch appointments:', error));
+    }, []);
+
+    const handleEventClick = (clickInfo) => {
+        // Navigate to the appointment details page using navigate
+        console.log(clickInfo.event.id);
+        navigate(`/admin/appointments/${clickInfo.event.id}`);
+    };
+
     return (
-      <div style={{
-        backgroundColor: event.backgroundColor, // Use color directly from event (assigned via therapists' info)
-        color: 'white',
-        borderRadius: '5px',
-        padding: '5px',
-        fontSize: '0.85em',
-        display: 'block'
-      }}>
-        <strong>{event.title}</strong>
-        <div>{`Client: ${event.extendedProps.clientName}`}</div>
-        <div>{`Time: ${new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - ${new Date(event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`}</div>
-      </div>
+        <>
+            <SimpleHeader />
+            <div className='booking-management'>
+                <FullCalendar
+                    plugins={[resourceTimelinePlugin, interactionPlugin]}
+                    initialView="resourceTimelineDay"
+                    headerToolbar={{
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth'
+                    }}
+                    resources={resources}
+                    events={events}
+                    slotDuration='00:15:00'
+                    eventClick={handleEventClick}  // Add the click handler here
+                    eventContent={renderEventContent}  // Custom render function for events
+                />
+            </div>
+        </>
     );
-  };
-
-  return (
-    <div className='booking-management'>
-      <UserHeader />
-      <FullCalendar
-        plugins={[resourceTimelinePlugin, interactionPlugin]}
-        initialView="resourceTimelineDay"
-        headerToolbar={{
-          left: 'prev,next today',
-          center: 'title',
-          right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth'
-        }}
-        resources={therapists}
-        events={[]}
-        eventContent={eventContent}
-        slotDuration='00:15:00'
-      />
-    </div>
-  );
 };
+
+function renderEventContent(eventInfo) {
+    return (
+        <>
+            <div><strong>{eventInfo.event.title.split(' - ')[0]}</strong></div>
+            <div>{eventInfo.event.title.split(' - ')[1]}</div>
+            <div>{new Date(eventInfo.event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(eventInfo.event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+        </>
+    );
+}
 
 export default BookingManagement;

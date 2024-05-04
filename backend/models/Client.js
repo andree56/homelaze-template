@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const clientSchema = new mongoose.Schema({
     name: { type: String, required: true },
     phone: { type: String, required: true },
-    barangay: String, // No longer required
-    city: { type: String, default: 'Iligan' }, // Default value set to 'Iligan'
+    barangay: String,
+    city: { type: String, default: 'Iligan' },
     address: String,
     facebookLink: String,
     notes: String

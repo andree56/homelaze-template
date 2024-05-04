@@ -16,18 +16,13 @@
 
 */
 import Index from "views/Index.js";
-import Profile from "views/examples/Profile.js";
-import Maps from "views/examples/Maps.js";
 import Register from "views/examples/Register.js";
 import Login from "views/examples/Login.js";
-import Tables from "views/examples/Tables.js";
-import Icons from "views/examples/Icons.js";
 import BookingManagement from 'views/admin/BookingManagement.js';
-// import ClientManagement from 'views/admin/ClientManagement.js';
 import TherapistSchedules from "views/admin/TherapistSchedules";
 import Appointments from "views/admin/Appointments";
-
-
+import ClientManagement from "views/admin/ClientManagement";
+import AppointmentDetails from "views/admin/AppointmentDetails";
 
 var routes = [
   {
@@ -36,6 +31,7 @@ var routes = [
     icon: "ni ni-tv-2 text-primary",
     component: <Index />,
     layout: "/admin",
+    showInSidebar: true
   },
   {
     path: "/booking-management",
@@ -43,6 +39,7 @@ var routes = [
     icon: "ni ni-calendar-grid-58 text-red",
     component: <BookingManagement />,
     layout: "/admin",
+    showInSidebar: true
   },
   {
     path: "/therapist-schedules",
@@ -50,21 +47,23 @@ var routes = [
     icon: "ni ni-time-alarm text-blue",
     component: <TherapistSchedules />,
     layout: "/admin",
+    showInSidebar: true
+  },
+  {
+    path: "/client-management",
+    name: "Clients",
+    icon: "ni ni-single-02 text-primary",
+    component: <ClientManagement />,
+    layout: "/admin",
+    showInSidebar: true
   },
   // {
-  //   path: "/client-management",
-  //   name: "Client Management",
-  //   icon: "ni ni-archive-2 text-green",
-  //   component: <ClientManagement />,
+  //   path: "/user-profile",
+  //   name: "User Profile",
+  //   icon: "ni ni-single-02 text-yellow",
+  //   component: <Profile />,
   //   layout: "/admin",
   // },
-  {
-    path: "/user-profile",
-    name: "User Profile",
-    icon: "ni ni-single-02 text-yellow",
-    component: <Profile />,
-    layout: "/admin",
-  },
   // {
   //   path: "/tables",
   //   name: "Tables",
@@ -76,16 +75,23 @@ var routes = [
     path: "/appointments",
     name: "Appointments",
     icon: "ni ni-calendar-grid-58 text-red",
-    component: Appointments,
+    component: <Appointments />,
     layout: "/admin",
+    showInSidebar: true
   },
-  
+  { path: '/appointments/:appointmentId', 
+    name: 'Appointment Details', 
+    component: <AppointmentDetails />,
+    layout: "/admin",
+    showInSidebar: false
+  },  
   {
     path: "/login",
     name: "Login",
     icon: "ni ni-key-25 text-info",
     component: <Login />,
     layout: "/auth",
+    showInSidebar: false
   },
   {
     path: "/register",
@@ -93,6 +99,7 @@ var routes = [
     icon: "ni ni-circle-08 text-pink",
     component: <Register />,
     layout: "/auth",
+    showInSidebar: false
   },
 ];
 export default routes;

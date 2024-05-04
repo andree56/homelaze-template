@@ -2,12 +2,20 @@ const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
 
-// POST endpoint to create a new client
+// Fetch all clients
+router.get('/', async (req, res) => {
+    try {
+        const clients = await Client.find();
+        res.json(clients);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Create a new client
 router.post('/', async (req, res) => {
     const { name, phone, barangay, city, address, facebookLink, notes } = req.body;
-
-    try {
-        const newClient = new Client({
+    const client = new Client({
         name,
         phone,
         barangay,
@@ -15,9 +23,10 @@ router.post('/', async (req, res) => {
         address,
         facebookLink,
         notes
-        });
-        await newClient.save();
-        res.status(201).json(newClient);
+    });
+    try {
+        await client.save();
+        res.status(201).json(client);
     } catch (err) {
         res.status(400).json({ message: err.message });
     }

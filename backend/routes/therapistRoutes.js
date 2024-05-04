@@ -5,6 +5,7 @@ const getRandomColor = require('../utils/colorHelper');
 
 // Get all therapists
 router.get('/', async (req, res) => {
+    console.log("wow nigana sanaol");
     try {
         const therapists = await Therapist.find();
         res.json(therapists);
