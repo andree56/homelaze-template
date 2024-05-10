@@ -4,26 +4,74 @@ const Appointment = require('../models/Appointment');
 
 // Get all appointments
 router.get('/', async (req, res) => {
+    const search = req.query.search || '';
+    const regex = new RegExp(search, 'i');  // Case-insensitive regex for searching
+
     try {
-        const appointments = await Appointment.find()
-            .populate({ path: 'clientId', select: 'name' })
-            .populate({ path: 'therapistId', select: 'name color' });
-
-        // Enhance appointments with full datetime strings
-        const enhancedAppointments = appointments.map(app => {
-            const date = app.date.toISOString().split('T')[0]; // Assuming 'date' is stored as a Date object
-            return {
-                ...app._doc,
-                start: `${date}T${app.startTime}`, // Combining date with startTime
-                end: `${date}T${app.endTime}` // Combining date with endTime
-            };
-        });
-
-        res.json(enhancedAppointments);
+        const appointments = await Appointment.aggregate([
+            {
+                $lookup: {
+                    from: 'clients', 
+                    localField: 'clientId',
+                    foreignField: '_id',
+                    as: 'clientDetails'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'therapists',
+                    localField: 'therapistId',
+                    foreignField: '_id',
+                    as: 'therapistDetails'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$clientDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $unwind: {
+                    path: "$therapistDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $match: {
+                    $or: [
+                        { "clientDetails.name": { $regex: regex } },
+                        { "therapistDetails.name": { $regex: regex } },
+                        { serviceType: { $regex: regex } },
+                        { status: { $regex: regex } },
+                        { notes: { $regex: regex } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    serviceType: 1,
+                    status: 1,
+                    notes: 1,
+                    date: 1,
+                    startTime: 1,
+                    endTime: 1,
+                    clientName: "$clientDetails.name",
+                    therapistName: "$therapistDetails.name",
+                    therapistColor: "$therapistDetails.color",
+                    therapistId: "$therapistId",
+                    start: { $concat: [ { $dateToString: { format: "%Y-%m-%d", date: "$date" } }, "T", "$startTime" ] },
+                    end: { $concat: [ { $dateToString: { format: "%Y-%m-%d", date: "$date" } }, "T", "$endTime" ] }
+                }
+            }
+        ]);
+        console.log("this apptments: ", appointments);
+        res.json(appointments);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
+
 
 // Get a single appointment by ID
 router.get('/:id', async (req, res) => {
@@ -38,12 +86,13 @@ router.get('/:id', async (req, res) => {
 
         // Assuming appointment has a date, startTime, and endTime
         const date = appointment.date.toISOString().split('T')[0];
+        console.log(date)
         const enhancedAppointment = {
             ...appointment._doc,
             start: `${date}T${appointment.startTime}`,
             end: `${date}T${appointment.endTime}`
         };
-
+        console.log(enhancedAppointment)
         res.json(enhancedAppointment);
     } catch (error) {
         res.status(500).send('Server error');
@@ -52,7 +101,7 @@ router.get('/:id', async (req, res) => {
 
 // Create a new appointment
 router.post('/', async (req, res) => {
-    const { therapistId, clientId, serviceType, date, startTime, endTime, notes } = req.body;
+    const { therapistId, clientId, serviceType, date, startTime, endTime, notes, status } = req.body;
     try {
         const newAppointment = new Appointment({
             therapistId,
@@ -61,7 +110,8 @@ router.post('/', async (req, res) => {
             date,
             startTime,
             endTime,
-            notes
+            notes,
+            status
         });
         await newAppointment.save();
 
@@ -77,6 +127,45 @@ router.post('/', async (req, res) => {
         });
     } catch (err) {
         res.status(400).json({ message: err.message });
+    }
+});
+
+// Update an appointment
+router.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    const { serviceType, status, date, startTime, endTime } = req.body;
+
+    try {
+        // Find the appointment and update it
+        const updatedAppointment = await Appointment.findByIdAndUpdate(
+            id, 
+            { $set: { serviceType, status, date, startTime, endTime } },
+            { new: true, runValidators: true } // Option to return the updated object and run validators
+        );
+
+        if (!updatedAppointment) {
+            return res.status(404).send({ message: 'Appointment not found' });
+        }
+
+        res.json(updatedAppointment);
+    } catch (error) {
+        console.error('Failed to update appointment:', error);
+        res.status(500).send({ message: 'Error updating appointment', error: error.message });
+    }
+});
+
+// Delete an appointment
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const deletedAppointment = await Appointment.findByIdAndDelete(id);
+        if (!deletedAppointment) {
+            return res.status(404).send('Appointment not found');
+        }
+        res.json({ message: 'Appointment successfully deleted', deletedAppointment });
+    } catch (error) {
+        res.status(500).send('Error deleting appointment: ' + error);
     }
 });
 

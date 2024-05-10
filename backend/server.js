@@ -4,15 +4,14 @@ const cors = require('cors');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const therapistRoutes = require('./routes/therapistRoutes');
 const clientManagementRoutes = require('./routes/clientManagementRoutes');
-const Appointment = require('./models/Appointment');  // Assuming you have an Appointment model
+const authRoutes = require('./routes/authRoutes');
+const Appointment = require('./models/Appointment'); // Assuming you have an Appointment model
+const jwt = require('jsonwebtoken'); // Make sure to install and import this
 
 const app = express();
 
 // CORS configuration for development
-// In production, you might want to restrict this to only certain origins
-app.use(cors({
-  origin: 'http://localhost:3000', // Adjust this if your front-end is on a different port
-}));
+app.use(cors({ origin: 'http://localhost:3000' }));
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -25,15 +24,35 @@ mongoose.connect('mongodb://localhost/homelazeDB', {
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('Could not connect to MongoDB', err));
 
-// Routes for handling API requests
-app.use('/api/therapists', therapistRoutes);
-app.use('/api/appointments', appointmentRoutes);
-app.use('/api/client-management', clientManagementRoutes);
+// Middleware to verify JWT tokens
+const verifyToken = (req, res, next) => {
+    const token = req.headers['authorization'];
+    if (!token) return res.status(401).json({ message: 'No token provided' });
+
+    jwt.verify(token.split(" ")[1], process.env.JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(401).json({ message: 'Failed to authenticate token' });
+        req.user = decoded;
+        next();
+    });
+};
+
+// Authentication routes
+app.use('/api/auth', authRoutes);
+
+// Public endpoints for services and statuses
+const services = ["Whole Body Massage", "1.5hr Whole Body Massage", "2hr Whole Body Massage", "30min Foot Massage"];
+const statuses = ["Booked", "Completed", "Cancelled"];
+
+app.get('/api/services', (req, res) => res.json(services));
+app.get('/api/statuses', (req, res) => res.json(statuses));
+
+// Protected routes
+app.use('/api/therapists', verifyToken, therapistRoutes);
+app.use('/api/appointments', verifyToken, appointmentRoutes);
+app.use('/api/client-management', verifyToken, clientManagementRoutes);
 
 // Handling 404 errors for unspecified routes
-app.use((req, res) => {
-    res.status(404).send('API endpoint does not exist');
-});
+app.use((req, res) => res.status(404).send('API endpoint does not exist'));
 
 // Centralized error handling
 app.use((err, req, res, next) => {

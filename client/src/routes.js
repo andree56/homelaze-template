@@ -17,12 +17,13 @@
 */
 import Index from "views/Index.js";
 import Register from "views/examples/Register.js";
-import Login from "views/examples/Login.js";
+import Login from "views/Login";
 import BookingManagement from 'views/admin/BookingManagement.js';
 import TherapistSchedules from "views/admin/TherapistSchedules";
 import Appointments from "views/admin/Appointments";
 import ClientManagement from "views/admin/ClientManagement";
 import AppointmentDetails from "views/admin/AppointmentDetails";
+import AppointmentAdd from "views/admin/AppointmentAdd";
 
 var routes = [
   {
@@ -84,20 +85,18 @@ var routes = [
     component: <AppointmentDetails />,
     layout: "/admin",
     showInSidebar: false
-  },  
+  },
+  { path: '/appointments/new', 
+    name: 'Appointment Details', 
+    component: <AppointmentAdd />,
+    layout: "/admin",
+    showInSidebar: false
+  },    
   {
     path: "/login",
     name: "Login",
     icon: "ni ni-key-25 text-info",
     component: <Login />,
-    layout: "/auth",
-    showInSidebar: false
-  },
-  {
-    path: "/register",
-    name: "Register",
-    icon: "ni ni-circle-08 text-pink",
-    component: <Register />,
     layout: "/auth",
     showInSidebar: false
   },

@@ -25,16 +25,18 @@ const BookingManagement = () => {
             })
             .catch(error => console.error('Failed to fetch therapists:', error));
 
-        axios.get('http://localhost:5000/api/appointments')
+            axios.get('http://localhost:5000/api/appointments')
             .then(response => {
+                console.log("Appointments fetched:", response.data);
                 const formattedEvents = response.data.map(appointment => ({
                     id: appointment._id,
-                    resourceId: appointment.therapistId._id,
-                    title: `${appointment.clientId.name} - ${appointment.serviceType}`,
-                    start: `${today}T${appointment.startTime}`, // Construct full datetime string
-                    end: `${today}T${appointment.endTime}`,
-                    backgroundColor: appointment.therapistId.color
+                    resourceId: appointment.therapistId,
+                    title: `${appointment.clientName} - ${appointment.serviceType}`,
+                    start: appointment.start, // Construct full datetime string
+                    end: appointment.end,
+                    backgroundColor: appointment.therapistColor
                 }));
+                console.log(formattedEvents)
                 setEvents(formattedEvents);
             })
             .catch(error => console.error('Failed to fetch appointments:', error));
