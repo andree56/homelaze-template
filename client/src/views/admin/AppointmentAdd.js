@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Container, Button, Modal, ModalHeader, ModalBody, FormGroup, Label, Input } from 'reactstrap';
+import { Container, Button, FormGroup, Label, Input } from 'reactstrap';
 import SimpleHeader from 'components/Headers/SimpleHeader';
 
 function AppointmentAdd() {
-    const [services, setServices] = useState([]);
+    const [services, setServices] = useState({});
     const [statuses, setStatuses] = useState([]);
     const [clients, setClients] = useState([]);
     const [therapists, setTherapists] = useState([]);
@@ -17,7 +17,9 @@ function AppointmentAdd() {
         date: '',
         startTime: '',
         endTime: '',
-        notes: ''
+        notes: '',
+        pax: 1,
+        price: 0
     });
     const navigate = useNavigate();
 
@@ -40,28 +42,36 @@ function AppointmentAdd() {
     }, []);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value,
+            price: e.target.name === 'serviceType' ? services[e.target.value] * formData.pax : formData.price
+        });
+    };
+
+    const handlePaxChange = (e) => {
+        setFormData({
+            ...formData,
+            pax: e.target.value,
+            price: services[formData.serviceType] * e.target.value
+        });
+        console.log(services[formData.serviceType])
     };
 
     const handleSubmit = () => {
-        // Check if all required fields are filled
         if (!formData.therapistId || !formData.clientId || !formData.serviceType || !formData.status) {
             alert('Please fill in all fields.');
-            return; // Stop the submission
+            return;
         }
-    
-        console.log('Submitting the following data:', formData); // Log data being submitted
         axios.post('http://localhost:5000/api/appointments', formData)
             .then(response => {
-                console.log('Appointment added:', response.data);
+                console.log("test forma data submit: ", formData)
                 navigate('/admin/appointments');
             })
             .catch(error => {
                 console.error('Error adding appointment:', error);
             });
     };
-    
-    
 
     return (
         <>
@@ -84,8 +94,21 @@ function AppointmentAdd() {
                 <Label for="serviceType">Service</Label>
                 <Input type="select" name="serviceType" id="serviceType" value={formData.serviceType} onChange={handleChange}>
                     <option value="">Select Service...</option>
-                    {services.map(service => <option key={service} value={service}>{service}</option>)}
+                    {Object.keys(services).map(service => (
+                        <option key={service} value={service}>
+                            {service} {/* Display the name of the service type */}
+                        </option>
+                    ))}
                 </Input>
+
+            </FormGroup>
+            <FormGroup>
+                <Label for="pax">Number of People</Label>
+                <Input type="number" name="pax" id="pax" min="1" value={formData.pax} onChange={handlePaxChange} />
+            </FormGroup>
+            <FormGroup>
+                <Label for="price">Price</Label>
+                <Input type="text" name="price" id="price" value={formData.price} disabled />
             </FormGroup>
             <FormGroup>
                 <Label for="status">Status</Label>
@@ -116,7 +139,6 @@ function AppointmentAdd() {
         </Container>
         </>
     );
-    
 }
 
 export default AppointmentAdd;

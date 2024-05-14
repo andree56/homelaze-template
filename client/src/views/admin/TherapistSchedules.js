@@ -56,6 +56,7 @@ function TherapistSchedules() {
     <>
       <SimpleHeader title="Therapist Management" />
       <Container className="mt-4">
+        <h2>Therapists</h2>
         {therapists.map(therapist => (
           <Card key={therapist._id}>
             <CardBody>

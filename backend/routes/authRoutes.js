@@ -6,10 +6,10 @@ const jwt = require('jsonwebtoken');
 // Hardcoded admin credentials (normally, you should never hardcode sensitive information like this in your code!)
 const adminUser = {
     username: 'admin',
-    password: '$2a$12$V0NMD1dTP7t1ieJFQd1J8e3HzlHh7LV.0B6LHSGNvGzH7Lx5lNrfG'  // This is a bcrypt hash of a password, e.g., 'password'
+    password: '$2a$12$gCqmNvjxVBkpIyT4R8wt9uSSYkUbwSlx1sEVOizybO9w69h5JQk7y'  // This is a bcrypt hash of a password, e.g., 'password'
 };
 
-router.post('/login', async (req, res) => {
+router.post('/', async (req, res) => {
     const { username, password } = req.body;
     if (username !== adminUser.username) {
         return res.status(404).json({ message: "User not found" });

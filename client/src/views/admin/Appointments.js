@@ -18,6 +18,7 @@ function Appointments() {
         console.log(`Searching for: ${searchTerm}`);
         axios.get(`http://localhost:5000/api/appointments?search=${encodeURIComponent(searchTerm)}`)
             .then(response => {
+                console.log("test response data fetch apptments", response.data);
                 setAppointments(response.data);
             })
             .catch(error => console.error('Error fetching appointments:', error));
@@ -67,6 +68,8 @@ function Appointments() {
                             <th>Client</th>
                             <th>Therapist</th>
                             <th>Service</th>
+                            <th>Pax</th>
+                            <th>Price</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -79,6 +82,8 @@ function Appointments() {
                                 <td>{appointment.clientName}</td>
                                 <td>{appointment.therapistName}</td>
                                 <td>{appointment.serviceType}</td>
+                                <td>{appointment.pax}</td>
+                                <td>₱{appointment.price.toFixed(2)}</td>
                                 <td>{appointment.status}</td>
                                 <td>
                                     <Button color="secondary" size="sm" onClick={() => handleEdit(appointment._id)}><FaInfoCircle /></Button>{' '}

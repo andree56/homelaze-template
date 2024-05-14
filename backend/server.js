@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -5,8 +6,8 @@ const appointmentRoutes = require('./routes/appointmentRoutes');
 const therapistRoutes = require('./routes/therapistRoutes');
 const clientManagementRoutes = require('./routes/clientManagementRoutes');
 const authRoutes = require('./routes/authRoutes');
-const Appointment = require('./models/Appointment'); // Assuming you have an Appointment model
 const jwt = require('jsonwebtoken'); // Make sure to install and import this
+const config = require('./utils/config.js');
 
 const app = express();
 
@@ -27,23 +28,30 @@ mongoose.connect('mongodb://localhost/homelazeDB', {
 // Middleware to verify JWT tokens
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization'];
-    if (!token) return res.status(401).json({ message: 'No token provided' });
-
-    jwt.verify(token.split(" ")[1], process.env.JWT_SECRET, (err, decoded) => {
-        if (err) return res.status(401).json({ message: 'Failed to authenticate token' });
-        req.user = decoded;
+    if (!token) {
+        return res.status(401).json({ message: 'No token provided' });
+        }
+    
+        try {
+        const verified = jwt.verify(token.split(' ')[1], process.env.JWT_SECRET);
+        req.user = verified;
         next();
-    });
-};
-
+        } catch (err) {
+        return res.status(401).json({ message: 'Invalid or expired token' });
+        }
+    };
 // Authentication routes
-app.use('/api/auth', authRoutes);
+app.use('/api/login', authRoutes);
 
 // Public endpoints for services and statuses
-const services = ["Whole Body Massage", "1.5hr Whole Body Massage", "2hr Whole Body Massage", "30min Foot Massage"];
 const statuses = ["Booked", "Completed", "Cancelled"];
 
-app.get('/api/services', (req, res) => res.json(services));
+app.get('/api/services', (req, res) => {
+    console.log("this the service llist", config.services);
+    res.json(config.services);
+});
+
+
 app.get('/api/statuses', (req, res) => res.json(statuses));
 
 // Protected routes

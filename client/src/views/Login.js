@@ -26,15 +26,24 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      // Replace with your actual API that handles login
-      const response = await axios.post('http://localhost:5000/api/auth/login', { username, password });
-      localStorage.setItem('token', response.data.token); // Assuming the backend sends a token
-      setAuth(true); // Updating context to reflect authenticated state
-      navigate('/admin/index'); // Navigate to the admin dashboard
+      console.log("Attempting login with:", username, password);
+      const response = await axios.post('http://localhost:5000/api/login', { username, password });
+      console.log("Login response:", response.data);
+  
+      localStorage.setItem('token', response.data.token); // Store the token in local storage
+      console.log("Token stored in localStorage:", response.data.token);  // Confirm token storage
+  
+      login(); // Call the `login` function from AuthContext to update authentication state
+      console.log("Authentication status set to true");
+  
+      navigate('/admin/index'); // Navigate to the admin dashboard after successful login
+      console.log("Navigation to /admin/index triggered");
     } catch (error) {
-      alert('Invalid credentials');
+      console.error("Login failed with error:", error);
+      alert('Invalid credentials'); // Adjust message based on the error
     }
   };
+  
 
   return (
     <Col lg="5" md="7">
